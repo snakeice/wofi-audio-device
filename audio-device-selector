@@ -1,0 +1,60 @@
+#! /bin/env bash
+
+list_inputs() {
+    pactl list sources | grep -ie "description:"|cut -d: -f2
+}
+
+list_outputs() {
+    pactl list sinks | grep -ie "description:"|cut -d: -f2
+}
+
+set_default_input() {
+    desc="$*"
+
+    if [ "$desc" == "" ]; then
+        echo "No input selected"
+        return
+    fi
+
+    device=$(pactl list sources|grep -C2 -F "Description: $desc"|grep Name|cut -d: -f2|xargs)
+    if pactl set-default-source "$device"
+    then
+        dunstify -t 10000 -r 2 -u low "Activated: $desc"
+    else
+        dunstify -t 10000 -r 2 -u critical "Error activating $desc"
+    fi
+}
+
+set_default_output() {
+    desc="$*"
+
+    if [ "$desc" == "" ]; then
+        echo "No output selected"
+        return
+    fi
+
+    device=$(pactl list sinks|grep -C2 -F "Description: $desc"|grep Name|cut -d: -f2|xargs)
+    echo set-default-sink "$device"
+    if pactl set-default-sink "$device"
+    then
+        dunstify -t 10000 -r 2 -u low "Activated: $desc"
+    else
+        dunstify -t 10000 -r 2 -u critical "Error activating $desc"
+    fi
+}
+
+open_menu() {
+    wofi -dmenu -i
+}
+
+
+if [ "$1" == "input" ]; then
+    input=$(list_inputs | open_menu)
+    set_default_input $input
+elif [ "$1" == "output" ]; then
+    output=$(list_outputs | open_menu)
+    echo $output
+    set_default_output $output
+else
+    echo "Usage: $0 [input|output]"
+fi
