@@ -19,9 +19,9 @@ set_default_input() {
     device=$(pactl list sources|grep -C2 -F "Description: $desc"|grep Name|cut -d: -f2|xargs)
     if pactl set-default-source "$device"
     then
-        dunstify -t 10000 -r 2 -u low "Activated: $desc"
+        notify-send -t 10000 -u low "Activated: $desc"
     else
-        dunstify -t 10000 -r 2 -u critical "Error activating $desc"
+        notify-send -t 10000 -u critical "Error activating $desc"
     fi
 }
 
@@ -37,14 +37,14 @@ set_default_output() {
     echo set-default-sink "$device"
     if pactl set-default-sink "$device"
     then
-        dunstify -t 10000 -r 2 -u low "Activated: $desc"
+        notify-send "Activated: $desc" -t 10000 -u low
     else
-        dunstify -t 10000 -r 2 -u critical "Error activating $desc"
+        notify-send "Error activating $desc" -t 10000 -u critical
     fi
 }
 
 open_menu() {
-    wofi -dmenu -i
+    wofi -dmenu -i -p "Select device" -l 10
 }
 
 
